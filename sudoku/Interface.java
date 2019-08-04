@@ -3,6 +3,7 @@ package sudoku;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.Toolkit;
@@ -11,7 +12,9 @@ import java.awt.event.ActionListener;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
@@ -37,12 +40,14 @@ public class Interface {
 
 	private static Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 	
-	private static final int SCR_WIDTH = (int) (screenSize.getWidth()*900/1920);
+	private static final double RATIO = screenSize.getWidth()/1920;
+	private static final int SCR_WIDTH = (int) (900*RATIO);
 	private static final int SCR_HEIGHT = SCR_WIDTH + 100;
 
 	JFrame mainFrame;
 	JTextField[][] cells;
 	JButton confirm;
+	JCheckBox showSteps;
 	
 	JPanel[][] threeByThrees;
 	JPanel mainGrid;
@@ -74,15 +79,24 @@ public class Interface {
 			
 		});
 		
+		JPanel lowerLayout = new JPanel(new FlowLayout());
+		showSteps = new JCheckBox();
+		lowerLayout.add(confirm);
+		lowerLayout.add(showSteps);
+		lowerLayout.add(new JLabel("Show solving steps"));
+		
 		setupMainGrid();
 		mainPanel.add(mainGrid, BorderLayout.CENTER);
-		mainPanel.add(confirm, BorderLayout.SOUTH);
+		mainPanel.add(lowerLayout, BorderLayout.SOUTH);
 		
 		mainFrame.setVisible(true);
 	}
 	
 	private void handleSolvePress() {
-		int[][] answer = SudokuSolver.solve( getValueMatrix() );
+		boolean steps = showSteps.isSelected();
+		
+		int[][] answer = steps ? SudokuSolver.solve(getValueMatrix(), this) : SudokuSolver.solve(getValueMatrix());
+		
 		
 		for (int i = 0; i < N*N; i++)
 			for (int j = 0; j < N*N; j++)
@@ -214,6 +228,12 @@ public class Interface {
 		return cell;
 	}
 	
+	/**
+	 * Returns a matrix of
+	 * the values the user
+	 * inserted in each cell
+	 * @return
+	 */
 	private int[][] getValueMatrix(){
 		int[][] matrix = new int[N*N][N*N];
 		
@@ -227,6 +247,22 @@ public class Interface {
 		return matrix;
 	}
 	
+	/**
+	 * Updates the cell at x, y with
+	 * the new value. Used to show the
+	 * algorithm's process. Almost sure
+	 * this is not the best implementation
+	 * in terms of good practices
+	 * 
+	 * @param x
+	 * @param y
+	 * @param newVal
+	 */
+	public void updateCell(int x, int y, int newVal) {
+		if (newVal == -1) cells[x][y].setText("");
+		else cells[x][y].setText("" + newVal);
+		cells[x][y].update(cells[x][y].getGraphics());
+	}
 	
 	public static void main(String[] args) {
 		new Interface();

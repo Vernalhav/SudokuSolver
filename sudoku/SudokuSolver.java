@@ -6,6 +6,7 @@ import java.util.ArrayList;
 
 public class SudokuSolver {
 
+	private static Interface gui;
 	private static int[][] values;	// board of values that are going to be solved
 	private static boolean solved = false;
 	
@@ -14,12 +15,32 @@ public class SudokuSolver {
 	public static int[][] solve(int[][] values){
 		SudokuSolver.solved = false;
 		SudokuSolver.values = values;
+		SudokuSolver.gui = null;
 		
-		solve(0, 0);
+		try {
+			solve(0, 0);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		return SudokuSolver.values;
 	}
+
+	public static int[][] solve(int[][] values, Interface gui){
+		SudokuSolver.solved = false;
+		SudokuSolver.values = values;
+		SudokuSolver.gui = gui;
+		
+		try {
+			solve(0, 0);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return SudokuSolver.values;
+	}
+
 	
-	private static void solve(int x, int y){
+	private static void solve(int x, int y) throws Exception{
 		if (solved || isSolved()) return;
 		
 		if (values[x][y] != -1) {
@@ -29,12 +50,21 @@ public class SudokuSolver {
 		
 		for (int val : validNumbers(x, y)) {
 			values[x][y] = val;
+			if (gui != null) {
+				gui.updateCell(x, y, val);
+				Thread.sleep(10);
+			}
+			
 			solve( getNextX(x, y), getNextY(x, y) );
 			
 			if (solved) return;
 		}
 		
 		values[x][y] = -1;
+		if (gui != null) {
+			gui.updateCell(x, y, -1);
+			Thread.sleep(10);
+		}
 		return;
 	}
 	
